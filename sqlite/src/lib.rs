@@ -1,9 +1,8 @@
 use csv::ReaderBuilder; //for loading from csv
-use rusqlite::{params, Connection, Result}; 
+use rusqlite::ToSql;
+use rusqlite::{params, Connection, Result};
 use std::error::Error;
 use std::fs::File; //for loading csv //for capturing errors from loading
-use rusqlite::ToSql;
-                                     
 
 // Create a table
 pub fn create_table(conn: &Connection, table_name: &str) -> Result<()> {
@@ -21,7 +20,7 @@ pub fn create_table(conn: &Connection, table_name: &str) -> Result<()> {
     Ok(()) //returns nothing except an error if it occurs
 }
 
-//Read
+// Read records in table
 pub fn query_exec(conn: &Connection, query_string: &str) -> Result<()> {
     // Prepare the query and iterate over the rows returned
     let mut stmt = conn.prepare(query_string)?;
@@ -38,13 +37,16 @@ pub fn query_exec(conn: &Connection, query_string: &str) -> Result<()> {
     // Iterate over the rows and print the results
     for row in rows {
         let (id, name, gender, city) = row?;
-        println!("ID: {}, Name: {}, Gender: {}, City: {}", id, name, gender, city);
+        println!(
+            "ID: {}, Name: {}, Gender: {}, City: {}",
+            id, name, gender, city
+        );
     }
 
     Ok(())
 }
 
-//drop
+// Drop a table
 pub fn drop_table(conn: &Connection, table_name: &str) -> Result<()> {
     let drop_query = format!("DROP TABLE IF EXISTS {}", table_name);
     conn.execute(&drop_query, [])?;
@@ -52,12 +54,13 @@ pub fn drop_table(conn: &Connection, table_name: &str) -> Result<()> {
     Ok(())
 }
 
-//load data from a file path to a table
+// Load data from a file path to a table
 pub fn load_data_from_csv(
     conn: &Connection,
     table_name: &str,
     file_path: &str,
-) -> Result<(), Box<dyn Error>> { //Box<dyn Error> is a trait object that can represent any error type
+) -> Result<(), Box<dyn Error>> {
+    //Box<dyn Error> is a trait object that can represent any error type
     let file = File::open(file_path)?;
     let mut rdr = ReaderBuilder::new().has_headers(true).from_reader(file);
 
@@ -122,20 +125,30 @@ pub fn update_exec(
     params.push(Box::new(id)); // Box the ID to match the param type
 
     // Execute the query with the params. Use params slice.
-    conn.execute(&update_query, params.iter().map(|b| &**b).collect::<Vec<&dyn ToSql>>().as_slice())?;
-    
-    println!("Record with ID '{}' updated successfully in table '{}'.", id, table_name);
+    conn.execute(
+        &update_query,
+        params
+            .iter()
+            .map(|b| &**b)
+            .collect::<Vec<&dyn ToSql>>()
+            .as_slice(),
+    )?;
+
+    println!(
+        "Record with ID '{}' updated successfully in table '{}'.",
+        id, table_name
+    );
     Ok(())
 }
 
 // Insert a record in the table
 pub fn insert_exec(
-    conn: &Connection, 
+    conn: &Connection,
     table_name: &str,
-    id: i32, 
-    name: &str, 
-    gender: &str, 
-    city: &str
+    id: i32,
+    name: &str,
+    gender: &str,
+    city: &str,
 ) -> Result<()> {
     let insert_query = format!(
         "INSERT INTO {} (id, name, gender, city) VALUES (?, ?, ?, ?)",
@@ -143,18 +156,20 @@ pub fn insert_exec(
     );
 
     conn.execute(&insert_query, params![id, name, gender, city])?;
-    println!("Inserted person with ID '{}' into the '{}' table successfully!", id, table_name);
+    println!(
+        "Inserted person with ID '{}' into the '{}' table successfully!",
+        id, table_name
+    );
     Ok(())
 }
 
 // Delete a record in the table
-pub fn delete_exec(
-    conn: &Connection, 
-    table_name: &str, 
-    id: i32
-) -> Result<()> {
+pub fn delete_exec(conn: &Connection, table_name: &str, id: i32) -> Result<()> {
     let delete_query = format!("DELETE FROM {} WHERE id = ?", table_name);
     conn.execute(&delete_query, params![id])?;
-    println!("Deleted person with ID '{}' from the '{}' table successfully!", id, table_name);
+    println!(
+        "Deleted person with ID '{}' from the '{}' table successfully!",
+        id, table_name
+    );
     Ok(())
 }

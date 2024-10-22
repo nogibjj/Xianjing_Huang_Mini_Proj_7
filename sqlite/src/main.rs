@@ -5,10 +5,12 @@
 //user defined arguments and call lib.rs logic to handle them
 use clap::{Parser, Subcommand};
 use rusqlite::{Connection, Result};
-use sqlite::{create_table, drop_table, load_data_from_csv, query_exec, update_exec, insert_exec, delete_exec}; 
+use sqlite::{
+    create_table, delete_exec, drop_table, insert_exec, load_data_from_csv, query_exec, update_exec,
+};
 
 //Here we define a struct (or object) to hold our CLI arguments
-//for #[STUFF HERE] syntax, these are called attributes. 
+//for #[STUFF HERE] syntax, these are called attributes.
 //for now, they define behavior for elements in rust.
 
 #[derive(Parser, Debug)]
@@ -51,30 +53,27 @@ enum Commands {
     ///Pass a new record to insert
     /// "sqlite -i table1 11 Remi female Durham"
     #[command(alias = "i", short_flag = 'i')]
-    Insert { 
+    Insert {
         table_name: String,
         id: i32,
-        name: Option<String>,   
-        gender: Option<String>, 
-        city: Option<String>,    
+        name: Option<String>,
+        gender: Option<String>,
+        city: Option<String>,
     },
     ///Pass a new record to update
     /// "sqlite -u table1 11 Remi female 'Los Angeles'"
     #[command(alias = "u", short_flag = 'u')]
-    Update { 
+    Update {
         table_name: String,
         id: i32,
-        new_name: Option<String>,   
+        new_name: Option<String>,
         new_gender: Option<String>,
-        new_city: Option<String>,  
+        new_city: Option<String>,
     },
     ///Delete a record by id
     /// "sqlite -x table1 11"
     #[command(alias = "x", short_flag = 'x')]
-    Delete { 
-        table_name: String,
-        id: i32,   
-    },
+    Delete { table_name: String, id: i32 },
 }
 
 fn main() -> Result<()> {
@@ -108,20 +107,48 @@ fn main() -> Result<()> {
             load_data_from_csv(&conn, &table_name, &file_path)
                 .expect("Failed to load data from csv");
         }
-        Commands::Insert { table_name, id, name, gender, city } => {
-            println!("Insert record in table '{}' with ID {}, name {:?}, gender {:?}, city {:?}", table_name, id, name, gender, city);
-            insert_exec(&conn, &table_name, id, name.as_deref().unwrap_or("Unknown"), gender.as_deref().unwrap_or("Unknown"), city.as_deref().unwrap_or("Unknown"))
-                .expect("Failed to insert record");
+        Commands::Insert {
+            table_name,
+            id,
+            name,
+            gender,
+            city,
+        } => {
+            println!(
+                "Insert record in table '{}' with ID {}, name {:?}, gender {:?}, city {:?}",
+                table_name, id, name, gender, city
+            );
+            insert_exec(
+                &conn,
+                &table_name,
+                id,
+                name.as_deref().unwrap_or("Unknown"),
+                gender.as_deref().unwrap_or("Unknown"),
+                city.as_deref().unwrap_or("Unknown"),
+            )
+            .expect("Failed to insert record");
         }
-        Commands::Update { table_name, id, new_name, new_gender, new_city } => {
+        Commands::Update {
+            table_name,
+            id,
+            new_name,
+            new_gender,
+            new_city,
+        } => {
             println!("Updating record in table '{}' with ID {}", table_name, id);
-            update_exec(&conn, &table_name, id, new_name.as_deref(), new_gender.as_deref(), new_city.as_deref())
-                .expect("Failed to update record");
+            update_exec(
+                &conn,
+                &table_name,
+                id,
+                new_name.as_deref(),
+                new_gender.as_deref(),
+                new_city.as_deref(),
+            )
+            .expect("Failed to update record");
         }
         Commands::Delete { table_name, id } => {
             println!("Delete record in table '{}' with ID {}", table_name, id);
-            delete_exec(&conn, &table_name, id)
-                .expect("Failed to delete record");
+            delete_exec(&conn, &table_name, id).expect("Failed to delete record");
         }
     }
     Ok(())
