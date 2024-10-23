@@ -122,12 +122,17 @@ Once you build your CLI binary you can the use it like a regular CLI:
 #### CLI demo
 ![7](/imgs/007.png)
 `sqlite -c table1` Create Table table1.
+
 `sqlite -l table1 ../data/customer_new.csv` Load data into table 'table1' from '../data/customer_new.csv'.
-`sqlite -q "SELECT * FROM table1;"`
-Query: SELECT * FROM table1;
+
+`sqlite -q "SELECT * FROM table1;"` Query: SELECT * FROM table1;
+
 `sqlite -i table1 11 Remi female Durham` Insert person with ID '11' into the 'table1' table.
+
 `sqlite -u table1 11 Remi female 'Los Angeles'` Updating record in table 'table1' with ID 11.
+
 `sqlite -x table1 11` Delete record in table 'table1' with ID 11
+
 `sqlite -d table1` Table 'table1' dropped.
 
 ### Binary Download Link
