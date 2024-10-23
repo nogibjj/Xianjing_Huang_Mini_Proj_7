@@ -23,7 +23,7 @@ mod tests {
 
     #[test]
     fn test_create_table() {
-        let _lock = DB_MUTEX.lock().unwrap();
+        let _lock = DB_MUTEX.lock().unwrap(); // default: multi-thread
         let conn = setup_db();
         let table_check_query =
             "SELECT name FROM sqlite_master WHERE type='table' AND name='test_table'";
